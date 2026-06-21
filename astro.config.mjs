@@ -1,8 +1,8 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: "https://pastro.ndjp.net",
-  base: "",
+  site: "https://prohub.webn.cc/pAstro",
+  base: "pusws/pAstro",
   server: {
     host: true,
     port: 4321,
