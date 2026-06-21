@@ -1,16 +1,19 @@
 import { defineConfig } from 'astro/config';
 
-// 检测是否在 GitHub Actions 环境中编译
+// 1. 判断是否在 GitHub 环境
 const isGitHub = process.env.GITHUB_ACTIONS === 'true';
 
+// 2. 自动获取当前托管平台的临时/默认域名（无需手动配置，系统自带）
+const currentPlatformUrl = 
+  process.env.CF_PAGES_URL ||   // Cloudflare Pages 自动提供的当前构建 URL
+  process.env.VERCEL_URL ||     // Vercel 自动提供的当前构建 URL
+  process.env.URL ||            // Netlify 自动提供的当前构建 URL
+  'https://yourfallback.com';   // 兜底域名
+
 export default defineConfig({
-  // 1. 根据环境自动切换主域名
-  site: isGitHub 
-    ? 'https://https://pastro.ndjp.net' 
-    : 'https://pastro-2vp.pages.dev',
-  
-  // 2. 关键点：如果是 GitHub 则带上子路径，如果是 Cloudflare 则留空（根目录）
+  // 核心避坑点：只有 GitHub Pages 需要子路径，其他平台（不管绑定多少自定义域名）一律自动归零
   base: isGitHub ? '/pAstro' : '', 
-  
-  // 你原有的其他配置保持不变...
+
+  // 只需要在这里把默认的 github.io 改成你 GitHub 侧绑定的自定义主域名即可
+  site: process.env.SITE || (isGitHub ? 'https://prohub.webn.cc' : currentPlatformUrl),
 });
