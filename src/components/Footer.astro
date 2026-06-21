@@ -1,4 +1,5 @@
 ---
+const year = new Date().getFullYear();
 const footerLinks = [
   { label: "隐私政策", href: "#" },
   { label: "使用条款", href: "#" },
@@ -7,7 +8,7 @@ const footerLinks = [
 ---
 
 <footer class="site-footer">
-  <p>© <span id="year"></span> WebNav Hub. 保留所有权利。</p>
+  <p>© {year} WebNav Hub. 保留所有权利。</p>
   <nav>
     {
       footerLinks.map((link) => (
@@ -16,10 +17,3 @@ const footerLinks = [
     }
   </nav>
 </footer>
-
-<script>
-  const yearEl = document.getElementById("year");
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
-</script>
