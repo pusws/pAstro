@@ -136,7 +136,7 @@ export const categories: Category[] = [
       { title: "ping0", url: "https://ping0.cc/", icon: "fa-solid fa-fingerprint" },
       { title: "L53免费域名", url: "https://customer.l53.net/", icon: "fa-solid fa-fingerprint" },
       { title: "PDF在线工具", url: "https://tools.pdf24.org/", icon: "fa-solid fa-file-pdf" },
-      { title: "free-proxy", url: "http://free-proxy.cz/en/", icon: "fa-brands fa-internet-explorer" },
+      { title: "不想看片", url: "https://bxkp.org/", icon: "fa-solid fa-tv" },
       { title: "在线代理croxyproxy", url: "https://www.croxyproxy.rocks/_zh/", icon: "fa-solid fa-unlock" },
       { title: "微信Markdown编辑器", url: "https://doocs.github.io/md/", icon: "fa-regular fa-edit" },
       { title: "proxysite", url: "https://www.proxysite.com/", icon: "fa-solid fa-unlock" },
