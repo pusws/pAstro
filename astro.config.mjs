@@ -16,4 +16,14 @@ export default defineConfig({
 
   // 只需要在这里把默认的 github.io 改成你 GitHub 侧绑定的自定义主域名即可
   site: process.env.SITE || (isGitHub ? 'https://prohub.webn.cc' : currentPlatformUrl),
+
+  // 开发服务器监听所有网卡，方便容器 / 局域网 / 云端预览访问
+  server: {
+    host: true,
+    port: 4321,
+  },
+
+  devToolbar: {
+    enabled: false,
+  },
 });

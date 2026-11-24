@@ -126,7 +126,7 @@ bun run build      # 产物在 dist/
    - **Build command**：`bun run build`
    - **Build output directory**：`dist`
    - **Root directory**：（留空）
-   - **环境变量**：`BUN_VERSION=latest` 或 `1.4.4`（Pages 仪表盘 → Settings → Environment variables）
+   - **环境变量**：`BUN_VERSION=latest` 或 `1.4.5`（Pages 仪表盘 → Settings → Environment variables）
 5. 点 **Save and Deploy**。首次部署约 1 分钟。
 6. 之后每次 `git push` 自动重新部署。
 
