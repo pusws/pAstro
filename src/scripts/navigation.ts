@@ -2,6 +2,31 @@
 // View Transitions 后重复绑定（模块被缓存，变量跨页面切换保留）
 let hashHandlerBound = false;
 
+function getScrollBehavior(): ScrollBehavior {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth";
+}
+
+function setActiveNavLink(activeLink: HTMLAnchorElement) {
+  document.querySelectorAll<HTMLAnchorElement>("nav.site-nav a").forEach((l) => {
+    const isCurrent = l === activeLink;
+    l.classList.toggle("active", isCurrent);
+    if (isCurrent) {
+      l.setAttribute("aria-current", "location");
+    } else {
+      l.removeAttribute("aria-current");
+    }
+  });
+}
+
+function findNavLinkByHash(hash: string): HTMLAnchorElement | undefined {
+  if (!hash) return undefined;
+  return Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("nav.site-nav a"),
+  ).find((link) => link.getAttribute("href") === hash);
+}
+
 function initSmoothNav() {
   // 仅对未绑定的导航链接添加监听，保证 bootstrap 幂等，
   // 在 View Transitions 切换页面后只绑定新插入的元素
@@ -13,10 +38,7 @@ function initSmoothNav() {
     link.setAttribute("data-nav-bound", "");
     link.addEventListener("click", (e) => {
       e.preventDefault();
-      document
-        .querySelectorAll("nav.site-nav a")
-        .forEach((l) => l.classList.remove("active"));
-      link.classList.add("active");
+      setActiveNavLink(link);
 
       const href = link.getAttribute("href") ?? "";
       const targetId = href.split("#")[1];
@@ -25,16 +47,8 @@ function initSmoothNav() {
       const targetElement = document.getElementById(targetId);
       if (!targetElement) return;
 
-      targetElement.scrollIntoView({ behavior: "smooth" });
-
-      const newUrl =
-        window.location.protocol +
-        "//" +
-        window.location.host +
-        window.location.pathname +
-        "#" +
-        targetId;
-      window.history.pushState({ path: newUrl }, "", newUrl);
+      targetElement.scrollIntoView({ behavior: getScrollBehavior() });
+      window.history.pushState(null, "", `#${targetId}`);
     });
   });
 
@@ -47,33 +61,17 @@ function initSmoothNav() {
 
       const targetElement = document.getElementById(hash.substring(1));
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth" });
+        targetElement.scrollIntoView({ behavior: getScrollBehavior() });
       }
 
-      const activeLink = document.querySelector<HTMLAnchorElement>(
-        `nav.site-nav a[href="${hash}"]`,
-      );
-      if (activeLink) {
-        document
-          .querySelectorAll("nav.site-nav a")
-          .forEach((l) => l.classList.remove("active"));
-        activeLink.classList.add("active");
-      }
+      const activeLink = findNavLinkByHash(hash);
+      if (activeLink) setActiveNavLink(activeLink);
     });
   }
 
   // 每次页面加载同步一次当前 hash 对应的高亮状态
-  if (window.location.hash) {
-    const activeLink = document.querySelector<HTMLAnchorElement>(
-      `nav.site-nav a[href="${window.location.hash}"]`,
-    );
-    if (activeLink) {
-      document
-        .querySelectorAll("nav.site-nav a")
-        .forEach((l) => l.classList.remove("active"));
-      activeLink.classList.add("active");
-    }
-  }
+  const initialLink = findNavLinkByHash(window.location.hash);
+  if (initialLink) setActiveNavLink(initialLink);
 }
 
 function bootstrap() {

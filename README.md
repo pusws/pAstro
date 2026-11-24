@@ -6,24 +6,28 @@
 
 ## 功能
 
-- 分类导航 + 锚点平滑滚动，自动同步 URL hash
-- 顶部实时搜索框，按站点名称过滤，无匹配的分类自动折叠
-- 卡片悬停上浮、图标放大、键盘 `:focus-visible` 聚焦样式
-- 5 级响应式断点（1200 / 768 / 480 / 360px），移动端导航自动换行
-- 零运行时框架，构建产物为纯静态 HTML/CSS/JS
+- 分类导航 + 锚点平滑滚动，自动同步 URL hash 与 `aria-current` 状态（遵循 `prefers-reduced-motion`）
+- 顶部原生 `<search>` 实时搜索框，按站点名称过滤，无匹配分类自动隐藏，并带防抖 `aria-live` 播报
+- 卡片悬停上浮、图标放大（仅在允许动态效果时启用），全交互元素支持 `:focus-visible` 焦点轮廓
+- 响应式断点（`75 / 48 / 30 / 22.5em`，默认字号下对应 `1200 / 768 / 480 / 360px`），移动端导航自动换行
+- 遵循 [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) 规范，零运行时框架，构建产物为纯静态 HTML/CSS/JS
 
 ## 技术栈
 
-- [Astro 5](https://astro.build) — 静态站点生成
+- [Astro 7](https://astro.build) — 静态站点生成（Rust 编译器 + Vite 8）
+- [Bun](https://bun.sh) — 全能快速 JavaScript/TypeScript 运行时与包管理器
 - TypeScript — 链接数据、导航与搜索脚本
-- 原生 CSS — 响应式样式（移动端优先）
-- [Font Awesome 7](https://fontawesome.com) — 图标（CDN 引入）
+- 原生 CSS — 响应式样式（`em` 断点、百分比缩放、`content-visibility: auto`、高对比度与强迫色彩模式适配）
+- [Font Awesome 7](https://fontawesome.com) — 图标（CDN 引入，配置 SRI SHA-384 校验与 `preconnect`）
+- [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) — 现代 Web 最佳实践审核与规范指南（无障碍、安全、性能、现代 HTML/CSS）
 
 ## 目录结构
 
 ```
 .
+├── .bun-version              # Bun 版本声明
 ├── astro.config.mjs
+├── bun.lock                  # Bun 锁文件
 ├── package.json
 ├── tsconfig.json
 ├── public/
@@ -54,16 +58,22 @@
 
 ```bash
 # 安装依赖
-npm install
+bun install
 
 # 启动开发服务器（默认 http://localhost:4321）
-npm run dev
+bun dev
 
 # 构建静态产物到 dist/
-npm run build
+bun run build
 
 # 本地预览构建结果
-npm run preview
+bun run preview
+
+# TypeScript 类型检查
+bunx tsc --noEmit
+
+# 运行 Modern Web Guidance 遗留模式扫描
+bunx modern-web-guidance@latest legacy-scan src --json
 ```
 
 ## 添加 / 修改链接
@@ -96,8 +106,8 @@ export interface Category {
 通用前置：
 
 ```bash
-npm install
-npm run build      # 产物在 dist/
+bun install
+bun run build      # 产物在 dist/
 ```
 
 部署成功后，访问 `https://<你的域名>/` 即可。
@@ -113,19 +123,17 @@ npm run build      # 产物在 dist/
 3. 选择仓库，点 **Begin setup**。
 4. 填写构建设置：
    - **Framework preset**：选 `Astro`（若无，选 `None`）
-   - **Build command**：`npm run build`
+   - **Build command**：`bun run build`
    - **Build output directory**：`dist`
    - **Root directory**：（留空）
-   - **Node version**：环境变量 `NODE_VERSION=22`（Pages 仪表盘 → Settings → Environment variables）
-5. 点 **Save and Deploy**。首次部署约 1-2 分钟。
+   - **环境变量**：`BUN_VERSION=latest` 或 `1.4.4`（Pages 仪表盘 → Settings → Environment variables）
+5. 点 **Save and Deploy**。首次部署约 1 分钟。
 6. 之后每次 `git push` 自动重新部署。
 
 **方式 B：直接上传 dist**
 
 ```bash
-npm install -g wrangler
-npm run build
-wrangler pages deploy dist --project-name=webnav-hub
+bunx wrangler pages deploy dist --project-name=webnav-hub
 ```
 
 首次会要求登录 Cloudflare 账号。部署后访问 `https://webnav-hub.pages.dev`。
@@ -143,20 +151,19 @@ Pages 项目 → **Custom domains** → **Set up a custom domain** → 输入域
 1. 把项目推送到 GitHub。
 2. 登录 [Vercel](https://vercel.com/) → **Add New…** → **Project**。
 3. 选仓库，点 **Import**。
-4. Vercel 自动识别 Astro，配置已默认填好：
-   - **Build Command**：`astro build`（等价于 `npm run build`）
+4. Vercel 检测到 `bun.lock` 会自动启用 Bun：
+   - **Build Command**：`bun run build`（或 `astro build`）
    - **Output Directory**：`dist`
-   - **Install Command**：`npm install`
-5. 点 **Deploy**。约 1 分钟完成。
+   - **Install Command**：`bun install`
+5. 点 **Deploy**。约 30 秒至 1 分钟完成。
 6. 之后 `git push` 自动部署（main 分支为生产）。
 
 **方式 B：CLI 部署**
 
 ```bash
-npm i -g vercel
-vercel login
-vercel              # 首次：按提示配置项目；部署到预览环境
-vercel --prod       # 部署到生产
+bunx vercel login
+bunx vercel              # 首次：按提示配置项目；部署到预览环境
+bunx vercel --prod       # 部署到生产
 ```
 
 **绑定自定义域名**
@@ -173,7 +180,7 @@ Project → **Settings** → **Domains** → 输入域名 → 按提示到 DNS �
 2. 登录 [Netlify](https://app.netlify.com/) → **Add new site** → **Import an existing project**。
 3. 选择 Git 提供商并授权，选仓库。
 4. 填写构建设置：
-   - **Build command**：`npm run build`
+   - **Build command**：`bun run build`
    - **Publish directory**：`dist`
    - **Base directory**：（留空）
 5. 点 **Deploy site**。
@@ -184,9 +191,8 @@ Project → **Settings** → **Domains** → 输入域名 → 按提示到 DNS �
 无需 Git：
 
 ```bash
-npm install -g netlify-cli
-npm run build
-netlify deploy --dir=dist --prod
+bun run build
+bunx netlify deploy --dir=dist --prod
 ```
 
 首次会要求登录。预览 URL 类似 `https://random-name-123.netlify.app`。
@@ -201,7 +207,7 @@ Site → **Domain settings** → **Add custom domain** → 输入域名 → 按�
 
 ```toml
 [build]
-  command = "npm run build"
+  command = "bun run build"
   publish = "dist"
 
 [[headers]]
@@ -278,8 +284,16 @@ Site → **Domain settings** → **Add custom domain** → 输入域名 → 按�
      build:
        runs-on: ubuntu-latest
        steps:
-         - uses: actions/checkout@v4
-         - uses: withastro/action@v5 # 自动处理依赖安装、打包和上传
+         - uses: actions/checkout@v7
+         - uses: oven-sh/setup-bun@v2
+           with:
+             bun-version: latest
+         - run: bun install --frozen-lockfile
+         - run: bun run build
+         - uses: actions/configure-pages@v6
+         - uses: actions/upload-pages-artifact@v5
+           with:
+             path: ./dist
 
      deploy:
        needs: build
@@ -290,7 +304,7 @@ Site → **Domain settings** → **Add custom domain** → 输入域名 → 按�
        steps:
          - name: Deploy to GitHub Pages
            id: deployment
-           uses: actions/deploy-pages@v4
+           uses: actions/deploy-pages@v5
    ```
 
 5. **启用 Actions**：Fork 的仓库默认禁用 Actions。请前往仓库的 **Actions** 标签页，点击 **I understand my workflows, go ahead and enable them**。
@@ -307,9 +321,9 @@ Site → **Domain settings** → **Add custom domain** → 输入域名 → 按�
 如果你不想使用 GitHub Actions 自动构建，也可以在本地完成打包并推送到独立分支：
 
 ```bash
-npm install -D gh-pages
-npm run build
-npx gh-pages -d dist
+bun add -d gh-pages
+bun run build
+bunx gh-pages -d dist
 ```
 
 随后前往仓库 **Settings** → **Pages** → **Build and deployment**，将 **Source** 保持为 `Deploy from a branch`，**Branch** 选择 `gh-pages` 即可。
@@ -341,11 +355,14 @@ server {
 
 ## 设计说明
 
-- **配色**：黑色背景（`#0d0d0d`）+ 橙色主色（`#ff9000`）
-- **搜索**：顶部输入框实时过滤所有卡片，无匹配的分类区块自动隐藏
-- **交互**：卡片悬停上浮、图标轻微放大；导航锚点平滑滚动并同步 hash；脚本以 `astro:page-load` 为主、`DOMContentLoaded` 兜底，开启 View Transitions 也不会重复绑定
-- **无障碍**：卡片以 `<a>` 包裹图标与标题，链接文本可被 SEO/屏幕阅读器识别；键盘 Tab 聚焦时有 `:focus-visible` 高亮轮廓；图标统一 `aria-hidden`
-- **移动端**：5 级响应式断点，导航在窄屏自动换行
+本项目在保持页面 UI 不变的前提下，引入并对齐 Google Chrome 的 [Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance) 标准：
+
+- **配色与色彩方案**：黑色背景（`#0d0d0d`）+ 橙色主色（`#ff9000`）；通过 `<meta name="color-scheme" content="dark">` 与 `:root { color-scheme: dark }` 统一原生滚动条与表单控件色调，避免加载闪烁，同时提供 `prefers-contrast: more` 与 `forced-colors: active` 高对比度适配
+- **搜索**：使用原生 `<search>` 地标，输入框实时过滤所有卡片并隐藏空分类；通过防抖 `aria-live="polite"` 区域向屏幕阅读器播报匹配数量
+- **交互与动效**：卡片悬停动效置于 `@media (prefers-reduced-motion: no-preference)` 内，导航锚点滚动（带 `scroll-margin-top` 防吸顶遮挡）同样尊重系统减弱动画偏好；脚本以 `astro:page-load` 为主、`DOMContentLoaded` 兜底，开启 View Transitions 也不会重复绑定
+- **无障碍**：提供键盘可见的跳转主内容链接（`.skip-link`）、可区分的 `<nav aria-label>` 地标、全控件 `:focus-visible` 轮廓、图标 `aria-hidden="true"`、页脚链接最小 `24px` 触控目标高度，并以 `min-height` + `overflow-wrap: break-word` 防止自定义文本间距下标题裁剪
+- **安全与性能**：第三方 Font Awesome CDN 资源配置 SHA-384 子资源完整性（SRI）、`crossorigin="anonymous"`、`referrerpolicy="no-referrer"` 与 `preconnect`；首屏外分类区块启用 `content-visibility: auto` + `contain-intrinsic-block-size`（含 `@supports` 降级 containment）
+- **移动端**：`em` 响应式断点与百分比根字号缩放，兼容系统字体大小偏好，导航在窄屏自动换行
 
 ## License
 
